@@ -12,20 +12,24 @@ public class ThreadedPrimeNumberFinder {
 		List<PrimeFinder> primeFinders = new ArrayList<>(K_SLICES);
 		List<Thread> threads = new ArrayList<>(K_SLICES);
 
+		// Initialize the PrimerFinders
 		for (int index = 0; index < K_SLICES; ++index) {
 			primeFinders.add(new PrimeFinder(index * 1000, index * 1000 + 999));
 		}
 
+		// Fire off the threads
 		for (Runnable nextRunnable : primeFinders) {
 			Thread nextThread = new Thread(nextRunnable);
 			threads.add(nextThread);
 			nextThread.start();
 		}
 
+		// Wait for each to complete
 		for (Thread nextThread : threads) {
 			nextThread.join();			
 		}
 		
+		// Print the results
 		for (PrimeFinder nextPrimeFinder : primeFinders) {
 			System.out.println("Primes found: " + nextPrimeFinder.getResult());			
 		}

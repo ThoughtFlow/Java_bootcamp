@@ -17,18 +17,22 @@ public class ThreadedPrimeNumberFinder {
 		List<Future<String>> futures = new ArrayList<>(K_SLICES);
 		ExecutorService pool = Executors.newFixedThreadPool(5);
 
+		// Initialize the PrimerFinders
 		for (int index = 0; index < K_SLICES; ++index) {
 			primeFinders.add(new PrimeFinder(index * 1000, index * 1000 + 999));
 		}
 
+		// Fire off the threads
 		for (Callable<String> nextCallable : primeFinders) {
 			futures.add(pool.submit(nextCallable));			
 		}
 
+		// Print the results when ready
 		for (Future<String> nextFuture : futures) {
 			System.out.println("Primes found: " + nextFuture.get());			
 		}
 
+		// Shut it down
 		pool.shutdown();
 	}
 
