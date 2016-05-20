@@ -28,6 +28,23 @@ public class TestPersistentMovieDatabase {
 			System.out.println("Movie was not found: " + nameOfMovie);
 		}
 	}
+	
+	private static void findAndPrintByCategory(MovieDatabase database, String category) throws StorageException {
+		
+		Set<String> foundMovies = database.getByCategory(category);
+		
+		if (foundMovies.size() > 0) {
+			System.out.println("Category was found: ");
+			for (String next : foundMovies)
+			{
+				System.out.println(" " + next);
+			}
+		}
+		else {
+			System.out.println("No movies found for category " + category);
+		}
+			
+	}
 
 	public static void main(String... args) {
 
@@ -49,6 +66,8 @@ public class TestPersistentMovieDatabase {
 			Set<String> romanticComedy = new HashSet<>(Arrays.asList("COMEDY", "ROMANTIC"));
 			movies.add("When Harry Met Sally", romanticComedy, toDate(21, 7,1989));	
 			
+			findAndPrintByCategory(movies, "COMEDY");
+			
 			// Update release date
 			Movie movie = movies.find("Silence of the Lambs");
 			movie.setReleaseDate(toDate(14, 3, 1992));
@@ -56,13 +75,10 @@ public class TestPersistentMovieDatabase {
 			findAndPrint(movies, "Silence of the Lambs");
 			
 			// Getting by categories & deleting
-			for (String next : movies.getByCategory("COMEDY"))
-			{
-				System.out.println(next);
-			}
 			movies.delete("When Harry Met Sally");
 			
 			// Try to find movie after being deleted
+			findAndPrintByCategory(movies, "COMEDY");
 			findAndPrint(movies, "When Harry Met Sally");
 		}
 		catch (StorageException | ParseException exception) {

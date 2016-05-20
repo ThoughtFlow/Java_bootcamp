@@ -72,28 +72,27 @@ public class PersistentMovieDatabase implements MovieDatabase {
 	private long addMovie(String name, Date yearReleased) throws StorageException {
 
 		long newId;
-		
+
 		try (Connection connection = getConnection();
-			 PreparedStatement statement = connection.prepareStatement("INSERT INTO Movie (name, release_date) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);) {
+				PreparedStatement statement = connection.prepareStatement(
+						"INSERT INTO Movie (name, release_date) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);) {
 
 			int index = 1;
 			statement.setString(index++, name);
 			statement.setDate(index++, new java.sql.Date(yearReleased.getTime()));
-			
-			statement.executeUpdate();
-	        try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-	            if (generatedKeys.next()) {
-	                newId = generatedKeys.getLong(1);
-	            }
-	            else {
-	    			throw new StorageException("Error - could not get movie id");
-	            }
-	        }
-		}
-		catch (SQLException exception) {
+
+			executeUpdate(statement, "Add movie");
+			try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+				if (generatedKeys.next()) {
+					newId = generatedKeys.getLong(1);
+				} else {
+					throw new StorageException("Error - could not add movie");
+				}
+			}
+		} catch (SQLException exception) {
 			throw new StorageException("Error during add: " + exception.getMessage());
 		}
-		
+
 		return newId;
 	}
 	
@@ -106,10 +105,10 @@ public class PersistentMovieDatabase implements MovieDatabase {
 			statement.setLong(index++, movie_id);
 			statement.setLong(index++, category_id);
 			
-			statement.executeUpdate();
+			executeUpdate(statement, "add movie category");
 		}
 		catch (SQLException exception) {
-			throw new StorageException("Error during add: " + exception.getMessage());
+			throw new StorageException("Error during add movie category: " + exception.getMessage());
 		}
 	}
 	
@@ -125,7 +124,6 @@ public class PersistentMovieDatabase implements MovieDatabase {
 
 			statement.setString(1, name);
 			ResultSet resultSet = statement.executeQuery();
-
 			
 			if (resultSet.next()) {
 				if(releaseDate == null) {
@@ -189,7 +187,7 @@ public class PersistentMovieDatabase implements MovieDatabase {
 
 		return categoryId;
 	}
-	
+
 	private long addCategoryId(String categoryName) throws StorageException {
 
 		long categoryId;
@@ -199,16 +197,15 @@ public class PersistentMovieDatabase implements MovieDatabase {
 
 			statement.setString(1, categoryName);
 
-			statement.executeUpdate();
-
-	        try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-	            if (generatedKeys.next()) {
-	                categoryId = generatedKeys.getLong(1);
-	            }
-	            else {
-	    			throw new StorageException("Error - could not get catgoryId");
-	            }
-	        }
+			executeUpdate(statement, "Add category");
+			try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+				if (generatedKeys.next()) {
+					categoryId = generatedKeys.getLong(1);
+				}
+				else {
+					throw new StorageException("Error - could not get catgoryId");
+				}
+			}
 		}
 		catch (SQLException exception) {
 			throw new StorageException("Error during add category " + exception.getMessage());
@@ -236,7 +233,7 @@ public class PersistentMovieDatabase implements MovieDatabase {
 			updateMovie.setDate(index++, new java.sql.Date(movie.getReleaseDate().getTime()));
 			updateMovie.setLong(index++, movie.getId());
 			
-			updateMovie.executeUpdate();
+			executeUpdate(updateMovie, "Update movie");
 		}
 		catch (SQLException exception) {
 			throw new StorageException("Error during update: " + exception.getMessage());
@@ -249,10 +246,10 @@ public class PersistentMovieDatabase implements MovieDatabase {
 			    PreparedStatement deleteMovieStatement = connection.prepareStatement("DELETE FROM Movie WHERE name = ?")) {
 
 			deleteMovieCategoryStatement.setString(1,  name);
-			deleteMovieCategoryStatement.executeUpdate();
+			executeUpdate(deleteMovieCategoryStatement, "Delete category");
 			
 			deleteMovieStatement.setString(1,  name);
-			deleteMovieStatement.executeUpdate();
+			executeUpdate(deleteMovieStatement, "Delete movie");
 		}
 		catch (SQLException exception) {
 			throw new StorageException("Error during delete: " + exception.getMessage());
@@ -266,12 +263,23 @@ public class PersistentMovieDatabase implements MovieDatabase {
 				PreparedStatement deleteMovieStatement = connection.prepareStatement("DELETE FROM movie");
 				PreparedStatement deleteCategoryStatement = connection.prepareStatement("DELETE FROM category")) {
 
-			deleteMovieCategoryStatement.executeUpdate();
-			deleteMovieStatement.executeUpdate();
-			deleteCategoryStatement.executeUpdate();
+			executeUpdate(deleteMovieCategoryStatement, "Delete movie category");
+			executeUpdate(deleteMovieStatement, "Delete movie");
+			executeUpdate(deleteCategoryStatement, "Delete category");
 		}
 		catch (SQLException exception) {
 			throw new StorageException("Error during truncate: " + exception.getMessage());
+		}
+	}
+	
+	private void executeUpdate(PreparedStatement statementToExecute, String operation) throws StorageException {
+		try {
+		   if (statementToExecute.executeUpdate() == 0) {
+			   throw new StorageException("Unexpected result for " + operation + " - aborted");
+		   }
+		}
+		catch (SQLException exception) {
+			throw new StorageException("Error during : \"" + operation + "\" " + exception.getMessage());
 		}
 	}
 }
