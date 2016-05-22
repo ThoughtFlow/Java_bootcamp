@@ -1,9 +1,8 @@
 package lab09;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 
 public class CatCommand implements ShellCommand {
@@ -21,8 +20,7 @@ public class CatCommand implements ShellCommand {
 			
 			Path sourcePath = provider.getCurrentPath().resolve(commandOptions[0]);
 
-			try (BufferedReader fis = new BufferedReader(new InputStreamReader(
-					new FileInputStream(sourcePath.toFile())))) {
+			try (BufferedReader fis = new BufferedReader(new FileReader(sourcePath.toFile()))) {
 				String line;
 				
 				while ((line = fis.readLine()) != null) {

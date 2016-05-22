@@ -20,6 +20,11 @@ class Employee implements Serializable {
         this.emailAddress = emailAddress;
     }
 
+    // Turn this on to control serialization
+    //public Object readResolve() throws ObjectStreamException{
+    //	return new Employee(name, ssn, emailAddress);
+    //}
+    
     public static void setBaseVacationDays(int days) {
         baseVacationDays = days < 10? 10 : days;
     }

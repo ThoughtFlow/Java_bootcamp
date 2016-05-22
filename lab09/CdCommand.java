@@ -15,7 +15,13 @@ public class CdCommand implements ShellCommand, CurrentPathProvider {
 	public void doCommand(String... commandOptions) throws CommandException {
 		if (commandOptions.length > 0)
 		{
-			currentPath= currentPath.resolve(commandOptions[0]).normalize();
+			Path newPath = currentPath.resolve(commandOptions[0]).normalize();
+			if (newPath.toFile().isDirectory()) {
+				currentPath = newPath;
+			}
+			else {
+				throw new CommandException("No such directory: " + commandOptions[0], "cd", commandOptions);
+			}
 		}
 		else
 		{

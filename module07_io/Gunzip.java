@@ -24,7 +24,7 @@ public class Gunzip {
     }
 
     private static void gunzip(File file) {
-    	String fileName = file.getName();
+    	String fileName = file.getAbsolutePath();
         if (!file.exists()) {
             System.err.println("No such file: " + file.getAbsolutePath());
         } else if (file.isDirectory()) {

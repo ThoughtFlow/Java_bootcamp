@@ -1,21 +1,17 @@
-package lab10;
+package lab11_2;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 
 public class CatCommand implements ShellCommand {
 
 	private final CurrentPathProvider provider;
-	private final BufferedWriter writer;
 
-	public CatCommand(CurrentPathProvider provider, OutputStream writer) {
+	public CatCommand(CurrentPathProvider provider) {
 		this.provider = provider;
-		this.writer = new BufferedWriter(new OutputStreamWriter(writer));
 	}
 
 	@Override
@@ -25,14 +21,13 @@ public class CatCommand implements ShellCommand {
 			
 			Path sourcePath = provider.getCurrentPath().resolve(commandOptions[0]);
 
-			try (BufferedReader fis = new BufferedReader(new FileReader(sourcePath.toFile()))) {
+			try (BufferedReader fis = new BufferedReader(new InputStreamReader(
+					new FileInputStream(sourcePath.toFile())))) {
 				String line;
 				
 				while ((line = fis.readLine()) != null) {
-					writer.write(line);
-					writer.write("\n");
+					System.out.println(line);
 				}
-				writer.flush();
 			} catch (IOException e) {
 				throw new CommandException(e, "Could not cat", "cat", commandOptions);
 			}

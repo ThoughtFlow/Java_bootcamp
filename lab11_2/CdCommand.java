@@ -1,4 +1,4 @@
-package lab10;
+package lab11_2;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
